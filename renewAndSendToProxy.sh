@@ -62,12 +62,14 @@ for d in /etc/letsencrypt/live/*/ ; do
 		fi
     else 
 	    #"USE_SECRETS is set, use docker secrets
-		printf "${GREEN}create docker secret with name $folder.combined.pem \n"
-		secretname="cert-"
-		secretname="$secretname $folder.combined.pem"
-		docker secret create $secretname @$folder.combined.pem
 		
-		printf "${GREEN}created docker secret with name $folder.combined.pem \n"
+		printf "${GREEN}create docker secret with name $folder.combined.pem \n"
+        secretname="cert-$folder.combined.pem"
+        docker service update --secret-rm $secretname $PROXY_ADDRESS
+        docker secret rm $secretname
+        docker secret create $secretname $folder.combined.pem
+        docker service update --secret-add $secretname $PROXY_ADDRESS
+        printf "${GREEN}created docker secret with name $folder.combined.pem \n"
 	fi
 	
     

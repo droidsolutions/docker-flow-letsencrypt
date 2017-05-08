@@ -39,6 +39,7 @@ services:
       - DOMAIN_2=('michael-hamburger.de' 'www.michael-hamburger.de' 'blog.michael-hamburger.de')
       - CERTBOT_EMAIL=your.mail@mail.de
       - PROXY_ADDRESS=proxy
+      - USE_SECRET=true
       - CERTBOT_CRON_RENEW=('0 3 * * *' '0 15 * * *')
     volumes:
           - /etc/letsencrypt:/etc/letsencrypt

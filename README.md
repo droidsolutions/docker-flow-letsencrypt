@@ -21,7 +21,7 @@ You can find this project also on [Docker Hub](https://hub.docker.com/r/hamburml
 This docker image uses certbot-auto, curl and cron to create and renew your Let’s Encrypt certificates.
 Through environment variables you set the domains certbot-auto should create certificates for, which e-mail is used by Let’s Encrypt when you lose the account and want to get it back, the cronjob starting times and the dns-name of [Docker Flow: Proxy](https://github.com/vfarcic/docker-flow-proxy).
 
-When the image starts, the [certbot.sh](https://github.com/hamburml/docker-flow-letsencrypt/blob/master/certbot.sh) script runs and creates/renews the certificates and creates /etc/cron.d/renewcron. The script also runs [renewAndSendToProxy.sh](https://github.com/hamburml/docker-flow-letsencrypt/blob/master/renewAndSendToProxy.sh) which combines the cert.pem, chain.pem and privkey.pem to a domainname.combined.pem file and uploads your cert via curl to your proxy.
+When the image starts, the [certbot.sh](https://github.com/hamburml/docker-flow-letsencrypt/blob/master/certbot.sh) script runs and creates/renews the certificates and creates /etc/cron.d/renewcron. The script also runs [renewAndSendToProxy.sh](https://github.com/hamburml/docker-flow-letsencrypt/blob/master/renewAndSendToProxy.sh) which combines the cert.pem, chain.pem and privkey.pem to a domainname.combined.pem file and uploads your cert via curl to your proxy or uses docker secrets when USE_SECRET env var is set.
 
 [renewAndSendToProxy.sh](https://github.com/hamburml/docker-flow-letsencrypt/blob/master/renewAndSendToProxy.sh) also calls certbot-auto renew because this script is run by default two times a day (03:00 and 15:00 UTC) via /etc/cron.d/renewcron. You can overwrite this behavior by changing CERTBOT_CRON_RENEW environment variable. This script also creates backups of the /etc/letsencrypt folder which are stored in /etc/letsencrypt/backup. Don't worry, the backup folder is excluded from the tar command.
 
@@ -52,6 +52,7 @@ docker service create --name letsencrypt-companion \
     -e DOMAIN_2="('michael-hamburger.de' 'www.michael-hamburger.de' 'blog.michael-hamburger.de')"\
     -e CERTBOT_EMAIL="your.mail@mail.de" \
     -e PROXY_ADDRESS="proxy" \
+	-e USE_SECRET="true" \
     -e CERTBOT_CRON_RENEW="('0 3 * * *' '0 15 * * *')"\
     --network proxy \
     --mount type=bind,source=/etc/letsencrypt,destination=/etc/letsencrypt \
