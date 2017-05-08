@@ -34,35 +34,43 @@ for d in /etc/letsencrypt/live/*/ ; do
     cat cert.pem chain.pem privkey.pem > $folder.combined.pem
     printf "${GREEN}generated $folder.combined.pem${NC}\n"
 
-	printf "TESTING: \n"
+	#check if DFP should get certificates via PUT or Docker Secrets
 	if [ -z ${USE_SECRETS+x} ]; then 
-	    echo "USE_SECRETS is unset"; 
+	    #"USE_SECRETS is unset, use HTTP PUT
+		#send to proxy, retry up to 5 times with a timeout of $TIMEOUT seconds
+		printf "${GREEN}transmit $folder.combined.pem to $PROXY_ADDRESS${NC}\n"
+
+		exitcode=0
+		until [ $TRIES -ge $MAXRETRIES ]
+		do
+		  TRIES=$[$TRIES+1]
+		  curl --silent --show-error -i -XPUT \
+			   --data-binary @$folder.combined.pem \
+			   "$PROXY_ADDRESS:8080/v1/docker-flow-proxy/cert?certName=$folder.combined.pem&distribute=true" > /var/log/dockeroutput.log && break
+		  exitcode=$?
+
+		  if [ $TRIES -eq $MAXRETRIES ]; then
+			printf "${RED}transmit failed after ${TRIES} attempts.${NC}\n"
+		  else
+			printf "${RED}transmit failed, we try again in ${TIMEOUT} seconds.${NC}\n"
+			sleep $TIMEOUT
+		  fi
+		done
+
+		if [ $exitcode -eq 0 ]; then
+		  printf "proxy received $folder.combined.pem\n"
+		fi
     else 
-	    echo "USE_SECRETS is set to '$USE_SECRETS'"; fi
+	    #"USE_SECRETS is set, use docker secrets
+		printf "${GREEN}create docker secret with name $folder.combined.pem \n"
+		secretname="cert-"
+		secretname="$secretname $folder.combined.pem"
+		docker secret create $secretname @$folder.combined.pem
+		
+		printf "${GREEN}created docker secret with name $folder.combined.pem \n"
+	fi
 	
-    #send to proxy, retry up to 5 times with a timeout of $TIMEOUT seconds
-    printf "${GREEN}transmit $folder.combined.pem to $PROXY_ADDRESS${NC}\n"
-
-    exitcode=0
-    until [ $TRIES -ge $MAXRETRIES ]
-    do
-      TRIES=$[$TRIES+1]
-      curl --silent --show-error -i -XPUT \
-           --data-binary @$folder.combined.pem \
-           "$PROXY_ADDRESS:8080/v1/docker-flow-proxy/cert?certName=$folder.combined.pem&distribute=true" > /var/log/dockeroutput.log && break
-      exitcode=$?
-
-      if [ $TRIES -eq $MAXRETRIES ]; then
-        printf "${RED}transmit failed after ${TRIES} attempts.${NC}\n"
-      else
-        printf "${RED}transmit failed, we try again in ${TIMEOUT} seconds.${NC}\n"
-        sleep $TIMEOUT
-      fi
-    done
-
-    if [ $exitcode -eq 0 ]; then
-      printf "proxy received $folder.combined.pem\n"
-    fi
+    
 
 done
 
