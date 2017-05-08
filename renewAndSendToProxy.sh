@@ -34,6 +34,12 @@ for d in /etc/letsencrypt/live/*/ ; do
     cat cert.pem chain.pem privkey.pem > $folder.combined.pem
     printf "${GREEN}generated $folder.combined.pem${NC}\n"
 
+	printf "TESTING: \n"
+	if [ -z ${USE_SECRETS+x} ]; then 
+	    echo "USE_SECRETS is unset"; 
+    else 
+	    echo "USE_SECRETS is set to '$USE_SECRETS'"; fi
+	
     #send to proxy, retry up to 5 times with a timeout of $TIMEOUT seconds
     printf "${GREEN}transmit $folder.combined.pem to $PROXY_ADDRESS${NC}\n"
 
