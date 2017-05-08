@@ -13,10 +13,13 @@ RUN apt-get update && \
     apt-get -y install cron supervisor curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# install certbot-auto
+# install certbot-auto and docker-ce (use deb file, should be smaller compared to apt-get install docker-ce)
 RUN curl -o /root/certbot-auto https://dl.eff.org/certbot-auto && \
     chmod a+x /root/certbot-auto && \
-    /root/certbot-auto --version --non-interactive && \
+	/root/certbot-auto --version --non-interactive && \
+	curl -o /root/docker-ce.deb https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.1~ce-0~ubuntu-xenial_amd64.deb && \
+	dpkg -i ./docker-ce.deb && \
+	apt-get install -f && \
     apt-get purge -y --auto-remove gcc libc6-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
