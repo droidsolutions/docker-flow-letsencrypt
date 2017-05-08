@@ -18,8 +18,9 @@ RUN curl -o /root/certbot-auto https://dl.eff.org/certbot-auto && \
     chmod a+x /root/certbot-auto && \
 	/root/certbot-auto --version --non-interactive && \
 	curl -o /root/docker-ce.deb https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.1~ce-0~ubuntu-xenial_amd64.deb && \
+	apt-get install libltdl7 -y && \
+	apt-get install iptables -y && \
 	dpkg -i /root/docker-ce.deb && \
-	apt-get install -f && \
     apt-get purge -y --auto-remove gcc libc6-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
