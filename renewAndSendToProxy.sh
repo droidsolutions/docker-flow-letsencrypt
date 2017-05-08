@@ -17,7 +17,7 @@ TIMEOUT=5
 printf "${GREEN}Hello! renewAndSendToProxy runs. Today is $(date)${NC}\n"
 
 #full path is needed or it is not started when run as cron
-/root/certbot-auto renew > /var/log/dockeroutput.log
+/root/certbot-auto renew --no-bootstrap --no-self-upgrade > /var/log/dockeroutput.log
 
 printf "Docker Flow: Proxy DNS-Name: ${GREEN}$PROXY_ADDRESS${NC}\n";
 
