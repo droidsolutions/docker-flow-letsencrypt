@@ -21,7 +21,7 @@ printf "${GREEN}Hello! renewAndSendToProxy runs. Today is $(date)${NC}\n"
 
 printf "Docker Flow: Proxy DNS-Name: ${GREEN}$PROXY_ADDRESS${NC}\n";
 
-printf "DOMAIN_1 is $DOMAIN_1";
+printf "DOMAIN_1[0] is $DOMAIN_1[0]";
 
 for d in /etc/letsencrypt/live/*/ ; do
     #move to directory
