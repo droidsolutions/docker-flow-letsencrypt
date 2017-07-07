@@ -33,31 +33,6 @@ for d in /etc/letsencrypt/live/*/ ; do
     printf "concat certificates for $folder\n"
     cat cert.pem chain.pem privkey.pem > $folder.combined.pem
     printf "${GREEN}generated $folder.combined.pem${NC}\n"
-
-    #send to proxy, retry up to 5 times with a timeout of $TIMEOUT seconds
-    printf "${GREEN}transmit $folder.combined.pem to $PROXY_ADDRESS${NC}\n"
-
-    exitcode=0
-    until [ $TRIES -ge $MAXRETRIES ]
-    do
-      TRIES=$[$TRIES+1]
-      curl --silent --show-error -i -XPUT \
-           --data-binary @$folder.combined.pem \
-           "$PROXY_ADDRESS:8080/v1/docker-flow-proxy/cert?certName=$folder.combined.pem&distribute=true" > /var/log/dockeroutput.log && break
-      exitcode=$?
-
-      if [ $TRIES -eq $MAXRETRIES ]; then
-        printf "${RED}transmit failed after ${TRIES} attempts.${NC}\n"
-      else
-        printf "${RED}transmit failed, we try again in ${TIMEOUT} seconds.${NC}\n"
-        sleep $TIMEOUT
-      fi
-    done
-
-    if [ $exitcode -eq 0 ]; then
-      printf "proxy received $folder.combined.pem\n"
-    fi
-
 done
 
 printf "${RED}/etc/letsencrypt will be backed up as backup-date-time.tar.gz. It's important to know that some files are symbolic links (inside this backup) and they need to be untared correctly.${NC}\n"
